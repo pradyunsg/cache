@@ -18,10 +18,6 @@
   - [OCaml/Reason - esy](#ocamlreason---esy)
   - [PHP - Composer](#php---composer)
   - [Python - pip](#python---pip)
-    - [Simple example](#simple-example)
-    - [Multiple OSes in a workflow](#multiple-oss-in-a-workflow)
-    - [Using pip to get cache location](#using-pip-to-get-cache-location)
-    - [Using a script to get cache location](#using-a-script-to-get-cache-location)
   - [R - renv](#r---renv)
     - [Simple example](#simple-example-1)
     - [Multiple OSes in a workflow](#multiple-oss-in-a-workflow-1)
@@ -297,81 +293,14 @@ Esy allows you to export built dependencies and import pre-built dependencies.
 
 ## Python - pip
 
-For pip, the cache directory will vary by OS. See https://pip.pypa.io/en/stable/reference/pip_install/#caching
-
-Locations:
- - Ubuntu: `~/.cache/pip`
- - Windows: `~\AppData\Local\pip\Cache`
- - macOS: `~/Library/Caches/pip`
-
-### Simple example
 ```yaml
-- uses: actions/cache@v2
-  with:
-    path: ~/.cache/pip
-    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-    restore-keys: |
-      ${{ runner.os }}-pip-
-```
-
-Replace `~/.cache/pip` with the correct `path` if not using Ubuntu.
-
-### Multiple OS's in a workflow
-
-```yaml
-- uses: actions/cache@v2
-  if: startsWith(runner.os, 'Linux')
-  with:
-    path: ~/.cache/pip
-    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-    restore-keys: |
-      ${{ runner.os }}-pip-
-
-- uses: actions/cache@v2
-  if: startsWith(runner.os, 'macOS')
-  with:
-    path: ~/Library/Caches/pip
-    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-    restore-keys: |
-      ${{ runner.os }}-pip-
-
-- uses: actions/cache@v2
-  if: startsWith(runner.os, 'Windows')
-  with:
-    path: ~\AppData\Local\pip\Cache
-    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-    restore-keys: |
-      ${{ runner.os }}-pip-
-```
-
-### Using pip to get cache location
-
-> Note: This requires pip 20.1+
-```yaml
-- name: Get pip cache dir
+- name: Get pip Cache Directory
   id: pip-cache
   run: |
     echo "::set-output name=dir::$(pip cache dir)"
 
 - name: pip cache
   uses: actions/cache@v2
-  with:
-    path: ${{ steps.pip-cache.outputs.dir }}
-    key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-    restore-keys: |
-      ${{ runner.os }}-pip-
-```
-
-### Using a script to get cache location
-
-> Note: This uses an internal pip API and may not always work
-```yaml
-- name: Get pip cache dir
-  id: pip-cache
-  run: |
-    python -c "from pip._internal.locations import USER_CACHE_DIR; print('::set-output name=dir::' + USER_CACHE_DIR)"
-
-- uses: actions/cache@v2
   with:
     path: ${{ steps.pip-cache.outputs.dir }}
     key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
